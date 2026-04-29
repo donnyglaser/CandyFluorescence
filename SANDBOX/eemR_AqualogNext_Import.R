@@ -29,7 +29,7 @@ aqualogNext <- function(file) {
     colnames(res) <- ex
     row.names(res) <- round(em, digits = 2)
 
-    res <- reshape2::melt(res, varnames = c('ex', 'em'), value.name = 'x')
+    res <- reshape2::melt(res, varnames = c('em', 'ex'), value.name = 'x')
 
     ex <- sort(unique(ex))
     em <- sort(unique(em))
@@ -41,8 +41,8 @@ aqualogNext <- function(file) {
     l <- list(
         file = file,
         x = r$xyz.est$z,
-        ex = r$xyz.est$x,
-        em = r$xyz.est$y
+        ex = r$xyz.est$y,
+        em = r$xyz.est$x
     )
 
     return(l)
