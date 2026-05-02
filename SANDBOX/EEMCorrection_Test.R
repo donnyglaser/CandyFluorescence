@@ -1,12 +1,23 @@
-## run ASCIIImport.R first ##
 library(plyr)
 library(tidyverse)
+library(eemR)
 
-dir <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG_260417'
+source('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX/eemR_AqualogNext_Import.R')
+
+## for testing: this will be done in previous modules ##
+dir <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/260417'
 
 uvFile <- 'EzspecCompatible_aquaDMGUV_02_AbsTSpec.txt'
 
 ramanFile <- 'EzspecCompatible_waterRAMAN_EM.txt'
+
+blankFile <- 'EzspecCompatible_waterBLANK_EEM.txt'
+
+sampleFile <- 'EzspecCompatible_aquaDMG_05_EEM.txt'
+
+unCorrSample <- eem_read(paste0(dir, '/', sampleFile), import_function = aqualogNext)
+unCorrBlank <- eem_read(paste0(dir, '/', blankFile), import_function = aqualogNext)
+
 
 rawUV <- read.table(file = paste0(dir, '/', uvFile), header = F, sep = '', skip = 4, nrows = 401)
 colnames(rawUV) <- c('Ex', 'Absorption')

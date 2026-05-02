@@ -1,0 +1,3 @@
+## user input: script configuration settings ##
+
+instrument: Aqualog-Next-Ezspec
