@@ -27,7 +27,13 @@ baseLine <- lm(Signal ~ Em, baseLine)
 baseLine <- summary(baseLine)$coefficients[,1]
 rawRaman <- mutate(rawRaman, Baseline = (Em * baseLine[2]) + baseLine[1])
 rawRaman <- mutate(rawRaman, CorrectedSignal = Signal - Baseline)
-ramanPeak <- sum(rawRaman$CorrectedSignal)
+rawRaman <- mutate(rawRaman, dEm = c(diff(Em), NA))
+rawRaman <- mutate(rawRaman, Area = CorrectedSignal * dEm)
+
+# dEm <- sum(diff(rawRaman$Em) * (rawRaman$CorrectedSignal[-nrow(rawRaman)] + rawRaman$CorrectedSignal[-1]) / 2)
+
+# ramanPeak <- sum(rawRaman$CorrectedSignal)
+ramanPeak <- sum(rawRaman$Area, na.rm = T)
 
 
 ## orphan code ##
