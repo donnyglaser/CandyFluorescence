@@ -30,11 +30,18 @@
 ########## 7.b.ii. all EEMs directory
 ##### 7.c. script run information text file (file that has summary information about how the script ran: time, how many samples, model version, any errors/warnings, etc.)
 
+## order of operations from Cory & McKnight:
+#### raman normalize blank (line 74 from F4CorrectFunII.m)
+#### inner filter correct sample (line 121 from F4CorrectFunII.m)
+#### raman normalize sample (line 123 from F4CorrectFunII.m)
+#### blank subtract sample (line 125 from F4CorrectFunII.m)
+#### apply dilution factor to sample (line 127 from F4CorrectFunII.m)
+
 path <- commandArgs(trailingOnly = TRUE)
 
 ## TESTING ##
-path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
-setwd('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
+# path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
+# setwd('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
 ## TESTING ##
 
 ## copy script files to path ##
@@ -42,7 +49,7 @@ scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'scriptCheck_module.R', 'support
 ## move all script files to path, then change wd ##
 ## after script finishes, delete script files ##
 dir.create(paste0(path, '/scriptFiles/'))
-file.copy(scriptFiles, paste0(path, '/scriptFiles'), overwrite = T, showWarnings = F)
+file.copy(scriptFiles, paste0(path, '/scriptFiles'), overwrite = T)
 
 
 setwd(path)
@@ -59,7 +66,7 @@ source('scriptFiles/scriptCheck_module.R')
 
 ## SECTION 2 & 3: calculate raman peak area & correct blank EEM ##
 source('scriptFiles/blankEEM_module.R')
-log_msg('Notice', paste0('Raman peak area = ', ramanPeak))
 
+## it works up to here (260505) ##
 
-## SECTION 4: 
+## SECTION 4: correct samples

@@ -8,7 +8,7 @@
 
 
 ## these external packages are necessary for this script ##
-packages <- c('plyr', 'tidyverse', 'reshape2', 'eemR')
+packages <- c('plyr', 'tidyverse', 'reshape2', 'MBA', 'pracma')
 
 ## this checks your computer for the necessary librarys, and installs them if they are missing ##
 missingPackages <- packages[!packages %in% rownames(installed.packages())]
@@ -50,18 +50,14 @@ allFiles <- allFiles[!grepl('scriptFiles/', allFiles)]
 ## 1.a. check for RAMAN file ##
 ramanFile <- allFiles[grepl('.*raman.*', allFiles, ignore.case = T)]
 
-
-if(length(ramanFile) != 1) {
-    if(length(ramanFile) == 0) {
-        log_msg('Error', 'Raman file missing')
-        stop("Raman file missing. Exiting.")
-    } else if(length(ramanFile) > 1) {
-        log_msg('Error', 'Too many raman files')
-        stop("Too many raman files. Exiting.")
-    } else {
-        log_msg('Error', 'Unknown error finding raman file')
-        stop("Unknown error finding raman file. Exiting.")
-    }
+if(length(ramanFile) == 0) {
+    log_msg('Warning', 'Raman file missing, attempting to use blank EEM to raman normalize samples')
+    ramanStatus <- FALSE
+} else if(length(ramanFile) > 1) {
+    log_msg('Warning', 'Too many raman files, attempting to use blank EEM to raman normalize samples')
+    ramanStatus <- FALSE
+} else {
+    ramanStatus <- TRUE
 }
 ## raman file exists ##
 
