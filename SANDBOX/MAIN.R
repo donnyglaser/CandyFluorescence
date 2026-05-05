@@ -38,7 +38,7 @@ setwd('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluo
 ## TESTING ##
 
 ## copy script files to path ##
-scriptFiles <- c('MAIN.R', 'ramanPeak_module.R', 'blankEEM_module.R', 'scriptCheck_module.R', 'support_module.R', 'userInput_config.txt')
+scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'scriptCheck_module.R', 'support_module.R', 'userInput_config.txt')
 ## move all script files to path, then change wd ##
 ## after script finishes, delete script files ##
 dir.create(paste0(path, '/scriptFiles/'))
@@ -57,12 +57,9 @@ log_msg('Action', 'Script start')
 source('scriptFiles/scriptCheck_module.R')
 
 
-## SECTION 2: calculate raman peak area ##
-source('scriptFiles/ramanPeak_module.R')
+## SECTION 2 & 3: calculate raman peak area & correct blank EEM ##
+source('scriptFiles/blankEEM_module.R')
 log_msg('Notice', paste0('Raman peak area = ', ramanPeak))
 
 
-## Section 3: correct blank ##
-source('scriptFiles/blankEEM_module.R')
-
-
+## SECTION 4: 

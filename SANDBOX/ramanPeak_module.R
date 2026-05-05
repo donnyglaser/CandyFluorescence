@@ -1,4 +1,5 @@
 ## this module calculates the raman peak ##
+## depreciated (260505) ##
 
 rawRaman <- readLines(ramanFile)
 rawRaman <- rawRaman[5:(length(rawRaman)-2)]
