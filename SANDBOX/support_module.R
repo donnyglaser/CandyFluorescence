@@ -17,7 +17,7 @@ candyReadEEM <- function(file, format, interpolate = TRUE) {
         ex <- matrix(sapply(strsplit(ex, ":"), `[`, 1), nrow = nrow(ex))
         ex <- as.numeric(ex)
 
-        datLength <- length(readLines(file)) - 6
+        datLength <- suppressWarnings(length(readLines(file)) - 6)
         dat <- read.table(file, header = F, sep = '', skip = 4, nrow = datLength)
 
         em <- round(dat[,1], digits = 2)
@@ -50,13 +50,14 @@ candyReadEEM <- function(file, format, interpolate = TRUE) {
 
 candyRead_Em <- function(file, format) {
     if(tolower(format) == 'aqualog-next-ezspec') {
-        rawRaman <- readLines(file)
+        rawRaman <- suppressWarnings(readLines(file))
         rawRaman <- rawRaman[5:(length(rawRaman)-2)]
         rawRaman <- strsplit(rawRaman, '\t')
         rawRaman <- do.call(rbind, rawRaman)
         rawRaman <- apply(rawRaman, 2, as.numeric)
         colnames(rawRaman) <- c('Em', 'Signal')
         rawRaman <- data.frame(rawRaman)
+        # rawRaman <- apply(rawRaman, 2, as.numeric)
         out <- rawRaman
     } else if(tolower(format) == 'aqualog-next-origin') {
         out <- NULL
@@ -65,6 +66,28 @@ candyRead_Em <- function(file, format) {
     } else {
         out <- NULL
     }
+
+    return(out)
+}
+
+candyReadAbs <- function(file, format) {
+    if(tolower(format) == 'aqualog-next-ezspec') {
+        rawUV <- suppressWarnings(readLines(file))
+        rawUV <- rawUV[5:(length(rawUV)-2)]
+        rawUV <- data.frame(uv = rawUV)
+        rawUV <- data.frame(do.call('rbind', strsplit(as.character(rawUV$uv),'\t',fixed=TRUE)))
+        colnames(rawUV) <- c('Wavelength', 'Absorbance')
+        rawUV <- sapply(rawUV, as.numeric)
+        out <- data.frame(rawUV)
+    } else if(tolower(format) == 'aqualog-next-origin') {
+        out <- NULL
+    } else if(tolower(format) == 'uvmini') {
+        out <- NULL
+    } else {
+        out <- NULL
+    }
+
+    return(out)
 }
 
 ## eemR function, depreciating eemR from script (260505) ##

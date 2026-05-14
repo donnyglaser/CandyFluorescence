@@ -40,17 +40,18 @@
 path <- commandArgs(trailingOnly = TRUE)
 
 ## TESTING ##
-# path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
-# setwd('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
+path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
+setwd('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
 ## TESTING ##
 
 ## copy script files to path ##
-scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'scriptCheck_module.R', 'support_module.R', 'userInput_config.txt')
+scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'sampleCorrect_module.R', 'scriptCheck_module.R', 'support_module.R', 'userInput_config.txt')
 ## move all script files to path, then change wd ##
 ## after script finishes, delete script files ##
 dir.create(paste0(path, '/scriptFiles/'))
 file.copy(scriptFiles, paste0(path, '/scriptFiles'), overwrite = T)
 
+dir.create(paste0(path, '/scriptDataOut/'))
 
 setwd(path)
 print(getwd()) # testing
@@ -67,6 +68,40 @@ source('scriptFiles/scriptCheck_module.R')
 ## SECTION 2 & 3: calculate raman peak area & correct blank EEM ##
 source('scriptFiles/blankEEM_module.R')
 
-## it works up to here (260505) ##
+## it works up to here (260513) ##
 
 ## SECTION 4: correct samples
+
+for(isample in 1:length(sampleNames)) {
+    tsampleName <- sampleNames[isample]
+    tsampleFiles <- sampleFiles[grepl(paste0('.*', tsampleName, '.*'), sampleFiles)]
+    
+    if(tolower(instrumentConfig) == 'aqualog-next-ezspec') {
+        tEEMFile <- tsampleFiles[grepl('_EEM.txt', tsampleFiles)]
+    } else if(tolower(instrumentConfig) == 'aqualog-next-origin') {
+        log_msg('Error', 'Script does not support Aqualog-Next-Origin EEM file format')
+        stop("Unknown file format. Exiting.")
+    } else if(tolower(instrumentConfig) == 'fluoromax') {
+        log_msg('Error', 'Script does not support Fluoromax EEM file format')
+        stop("Unknown file format. Exiting.")
+    } else {
+        log_msg('Error', 'Unknown EEM file format')
+        stop("Unknown file format. Exiting.")
+    }
+
+    if(tolower(uvConfig) == 'aqualog-next-ezspec') {
+        tUVFile <- tsampleFiles[grepl('_AbsTSpec.txt', tsampleFiles)]
+    } else if(tolower(uvConfig) == 'aqualog-next-origin') {
+        log_msg('Error', 'Script does not support Aqualog-Next-Origin UV/vis file format')
+        stop("Unknown file format. Exiting.")
+    } else if(tolower(uvConfig) == 'uvmini') {
+        log_msg('Error', 'Script does not support UVmini UV/vis file format')
+        stop("Unknown file format. Exiting.")
+    } else {
+        log_msg('Error', 'Unknown UV/vis file format')
+        stop("Unknown file format. Exiting.")
+    }
+
+    source('sampleCorrect_module.R')
+
+}

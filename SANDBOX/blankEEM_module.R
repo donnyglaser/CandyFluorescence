@@ -1,5 +1,5 @@
 ## correct blank EEM ##
-blankEEM <- candyReadEEM(blankFile, instrumentConfig, interpolate = T)
+blankEEM <- candyReadEEM(blankFile, instrumentConfig, interpolate = F)
 
 
 ## raman normalization ##
@@ -22,6 +22,10 @@ if(ramanStatus == FALSE) {
     rawRaman <- rawRaman[,2:3]
     colnames(rawRaman) <- c('Em', 'Signal')
     rawRaman <- subset(rawRaman, Em > 360 & Em < 503)
+
+    if(rawRaman[which.max(rawRaman$Signal),1] < 395.5 | rawRaman[which.max(rawRaman$Signal),1] > 398.5) {
+        log_msg('Warning', 'Water raman peak is outside recommended wavelength range (395.5 - 398.5 nm)')
+    }
 }
 
 baseLine <- quantile(rawRaman$Signal, 0.75)
@@ -37,4 +41,7 @@ ramanPeak <- sum(rawRaman$Area, na.rm = T)
 log_msg('Alert', paste0('Water raman peak area = ', ramanPeak))
 
 blankEEM <- mutate(blankEEM, CorrectedSignal = Signal / ramanPeak)
+blankEEM_Corr <- blankEEM[,c(1:2,4)]
+blankEEM_Raw <- blankEEM[,1:3]
+
 log_msg('Alert', 'Blank EEM corrected')

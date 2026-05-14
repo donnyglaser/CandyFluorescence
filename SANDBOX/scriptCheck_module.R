@@ -40,7 +40,8 @@ lapply(packages, library, character.only = TRUE)
 ## set congifuration settings ##
 config <- read.table('scriptFiles/userInput_config.txt', header = T, sep = ' ', skip = 2) ## still need to work on this
 config <- data.frame(config)
-instrumentConfig <- subset(config, parameter = 'instrument')$setting
+instrumentConfig <- subset(config, parameter == 'instrument')$setting
+uvConfig <- subset(config, parameter == 'uvvis_source')$setting
 
 
 allFiles <- list.files(getwd(), recursive = T, include.dirs = F)
@@ -88,7 +89,7 @@ if(length(sampleFiles) %% 2 != 0) {
     stop("Unmatched sample file. Exiting.")
 }
 
-if(instrumentConfig == 'Aqualog-Next-Ezspec') {
+if(tolower(instrumentConfig) == 'aqualog-next-ezspec') {
     ## check if there is 1 EEM and one UV for each sample here ##
     ## make sample name list
     sampleNames <- sub('^EzspecCompatible_', '', sampleFiles)
@@ -99,29 +100,38 @@ if(instrumentConfig == 'Aqualog-Next-Ezspec') {
     for(isample in 1:length(sampleNames)) {
         tSample <- sampleFiles[grepl(paste0(',*', sampleNames[isample], '.*'), sampleFiles)]
 
-        if(all(c(
-            any(grepl("_EEM.txt$", tSample)),
-            any(grepl("_AbsTSpec.txt$", tSample))
-        )) == F) {
-            if(any(grepl("_EEM.txt$", tSample)) == F) {
-                log_msg('Error', paste0('Sample ', sampleNames[isample], ' is missing EEM file.'))
-                stop(paste0('Sample ', sampleNames[isample], ' is missing EEM file. Exiting.'))
-            } else if(any(grepl("_AbsTSpec.txt$", tSample)) == F) {
-                log_msg('Error', paste0('Sample ', sampleNames[isample], ' is missing UVvis (AbsTSpec) file.'))
-                stop(paste0('Sample ', sampleNames[isample], ' is missing UVvis (AbsTSpec) file. Exiting.'))
-            } else {
-                log_msg('Error', paste0('Unknown error finding EEM/UVvis file pair for sample ', sampleNames[isample], '.'))
-                stop(paste0('Unknown error finding EEM/UVvis file pair for sample ', sampleNames[isample], 'Exiting.'))
+        if(tolower(uvConfig) == 'aqualog-next-ezspec') {
+            if(all(c(
+                any(grepl("_EEM.txt$", tSample)),
+                any(grepl("_AbsTSpec.txt$", tSample))
+            )) == F) {
+                if(any(grepl("_EEM.txt$", tSample)) == F) {
+                    log_msg('Error', paste0('Sample ', sampleNames[isample], ' is missing EEM file.'))
+                    stop(paste0('Sample ', sampleNames[isample], ' is missing EEM file. Exiting.'))
+                } else if(any(grepl("_AbsTSpec.txt$", tSample)) == F) {
+                    log_msg('Error', paste0('Sample ', sampleNames[isample], ' is missing UVvis (AbsTSpec) file.'))
+                    stop(paste0('Sample ', sampleNames[isample], ' is missing UVvis (AbsTSpec) file. Exiting.'))
+                } else {
+                    log_msg('Error', paste0('Unknown error finding EEM/UVvis file pair for sample ', sampleNames[isample], '.'))
+                    stop(paste0('Unknown error finding EEM/UVvis file pair for sample ', sampleNames[isample], 'Exiting.'))
+                }
             }
+        } else if(tolower(uvConfig) == 'aqualog-next-origin') {
+            log_msg('Error', 'Script does not support Aqualog-Next-Origin UV/vis file format')
+            stop("Unknown file format. Exiting.")
+
+        } else if(tolower(uvConfig) == 'uvmini') {
+            log_msg('Error', 'Script does not support UVmini UV/vis file format')
+            stop("Unknown file format. Exiting.")
         }
     }
 
-} else if(instrumentConfig == 'Aqualog-Next-Origin') {
-    log_msg('Error', 'Script does not support Aqualog-Next-Origin file format')
+} else if(tolower(instrumentConfig) == 'aqualog-next-origin') {
+    log_msg('Error', 'Script does not support Aqualog-Next-Origin EEM file format')
     stop("Unknown file format. Exiting.")
 
-} else if(instrumentConfig == 'Fluoromax') {
-    log_msg('Error', 'Script does not support Fluoromax file format')
+} else if(tolower(instrumentConfig) == 'fluoromax') {
+    log_msg('Error', 'Script does not support Fluoromax EEM file format')
     stop("Unknown file format. Exiting.")
 
 } else {
