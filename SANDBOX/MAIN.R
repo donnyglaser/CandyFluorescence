@@ -102,6 +102,8 @@ for(isample in 1:length(sampleNames)) {
         stop("Unknown file format. Exiting.")
     }
 
-    source('sampleCorrect_module.R')
+    source('scriptFiles/sampleCorrect_module.R')
 
 }
+
+log_msg('Notice', 'All samples corrected')

@@ -39,4 +39,6 @@ rawEEM <- mutate(rawEEM, CorrectedSignal = SignalRamanNorm - BlankSignal_Corr)
 
 saveRDS(rawEEM, file = paste0(path, '/scriptDataOut/', tsampleName, '_CorrectedEEM.rds'))
 
-## havent tested this yet ##
+candyPlotEEM_TEST(rawEEM, tsampleName, TRUE)
+
+

@@ -90,6 +90,60 @@ candyReadAbs <- function(file, format) {
     return(out)
 }
 
+pTheme <- theme(plot.title = element_text(hjust = 0.5, size = 21,
+            face = "bold"),
+            text = element_text(size = 18),
+            axis.text.x = element_text(size = 14),
+            aspect.ratio = 0.625,
+            axis.line = element_line(color = "black"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank(),
+            panel.border = element_rect(color = "black", fill=NA, size=2),
+            legend.key=element_blank(),
+            legend.key.height = unit(0.25, "inch"),
+            legend.key.width = unit(1.35, "inch"),
+            legend.text.position = 'bottom', 
+            legend.title.align=0.5,
+            legend.title.position= 'bottom',
+            plot.margin = margin(0.5, 0.75, 0.25, 0.25, "cm"),
+            plot.tag.position = c(0.15, 0.02),
+            axis.title.y.right = element_text(margin = margin(l = 83)),
+            legend.position = 'bottom'
+        )
+
+candyPlotEEM_TEST <- function(rawEEM, name, save) {
+    ggplot(rawEEM, aes(x = Ex, y = Em, z = CorrectedSignal)) +
+    geom_contour_filled(breaks = seq(0, 0.5, length.out = 11)) +
+    scale_x_continuous(expand = expansion(), limits = c(250,450)) +
+    scale_y_continuous(expand = expansion(), limits = c(300,550)) +
+    ggtitle(name) +
+    xlab("Excitation Wavelength (nm)") +
+    ylab("Emission Wavelength (nm)") +
+    scale_fill_discrete(palette = 'viridis', drop = F,
+        labels = function(x) {
+            lab <- x
+            if (length(x) > 2) {
+                idx <- seq(1, length(x), by = 2)
+                lab[idx] <- ""
+            }
+            lab
+        }
+    ) +
+    guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
+    pTheme
+
+    if(save == TRUE) {
+        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
+    }
+}
+
+## need to figure out best way to save plots ##
+
+# ggsave('test.png', height = 6.2, width = 8, unit = 'in', dpi = 300)
+
+
+
 ## eemR function, depreciating eemR from script (260505) ##
 # aqualogNextEz <- function(file) {
 #     ex <- read.table(file, header = F, sep = '', skip = 2, nrows = 1)
