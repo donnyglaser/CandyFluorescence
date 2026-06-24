@@ -11,6 +11,6 @@ user_path=$(echo "$user_path" | sed "s/^['\"]//;s/['\"]$//")
 
 echo "Correcting EEMs in: $user_path"
 
-/usr/bin/env Rscript MAIN.R "$user_path"
+/usr/bin/env Rscript scriptFiles/MAIN.R "$user_path"
 
 ## this works!! ##

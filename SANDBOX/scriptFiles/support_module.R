@@ -3,11 +3,42 @@ scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'sampleCorrect_module.R', 'scrip
 ## move all script files to path, then change wd ##
 ## after script finishes, delete script files ##
 dir.create(paste0(path, '/scriptFiles/'))
-file.copy(scriptFiles, paste0(path, '/scriptFiles'), overwrite = T)
+file.copy(paste0(getwd(), '/scriptFiles/', scriptFiles), paste0(path, '/scriptFiles'), overwrite = T)
 
 dir.create(paste0(path, '/scriptDataOut/'))
 
 setwd(path)
+
+
+## these external packages are necessary for this script ##
+packages <- c('plyr', 'tidyverse', 'reshape2', 'MBA', 'pracma')
+
+## this checks your computer for the necessary libraries, and installs them if they are missing ##
+missingPackages <- packages[!packages %in% rownames(installed.packages())]
+missingPackages <- as.character(missingPackages)
+if (length(missingPackages) > 0) {
+    cat("Warning, your version of R is missing necessary packages:\n")
+    cat("Missing packages:\n")
+    cat(paste("-", missingPackages), sep = "\n")
+    cat("\n\n")
+    log_msg('Warning', paste0('Missing packages: ', paste(missingPackages, collapse = ", ")))
+    cat("Install missing packages? (y/n): ")
+    answer <- readLines("stdin", n = 1)
+
+    if (tolower(answer) %in% c("y", "yes")) {
+        options(repos = c(CRAN = "https://cloud.r-project.org"))
+        install.packages(missingPackages, dependencies = TRUE)
+        log_msg('Action', 'Packages installed')
+
+    } else {
+        log_msg('Error', 'User declined installing required packages')
+        stop("Required packages not installed. Exiting.")
+    }
+}
+## load necessary libraries ##
+lapply(packages, library, character.only = TRUE)
+
+
 
 ## auxillary support functions ##
 
