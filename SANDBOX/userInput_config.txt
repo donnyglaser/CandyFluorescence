@@ -1,5 +1,0 @@
-## user input: script configuration settings ##
-
-parameter setting
-instrument Aqualog-Next-Ezspec
-uvvis_source Aqualog-Next-Ezspec
