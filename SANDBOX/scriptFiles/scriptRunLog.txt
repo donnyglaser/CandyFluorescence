@@ -1,0 +1,8 @@
+Warning: [2026-05-01 15:57:59] Missing packages: reshape2, eemR
+Error: [2026-05-01 15:57:59] User declined installing required packages
+Warning: [2026-05-01 16:00:32] Missing packages: reshape2, eemR
+Warning: [2026-05-01 16:02:23] Missing packages: reshape2, eemR
+Warning: [2026-05-01 16:04:35] Missing packages: reshape2, eemR
+Warning: [2026-05-01 16:05:55] Missing packages: reshape2, eemR
+Warning: [2026-05-01 16:07:02] Missing packages: reshape2, eemR
+Action: [2026-05-01 16:07:12] Packages installed
