@@ -38,10 +38,10 @@ rawRaman <- mutate(rawRaman, dEm = c(diff(Em), NA))
 rawRaman <- mutate(rawRaman, Area = CorrectedSignal * dEm)
 
 ramanPeak <- sum(rawRaman$Area, na.rm = T)
-log_msg('Alert', paste0('Water raman peak area = ', ramanPeak))
+log_msg('Notice', paste0('Water raman peak area = ', ramanPeak))
 
 blankEEM <- mutate(blankEEM, CorrectedSignal = Signal / ramanPeak)
 blankEEM_Corr <- blankEEM[,c(1:2,4)]
 blankEEM_Raw <- blankEEM[,1:3]
 
-log_msg('Alert', 'Blank EEM corrected')
+log_msg('Notice', 'Blank EEM corrected')

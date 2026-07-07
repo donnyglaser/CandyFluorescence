@@ -29,16 +29,31 @@ uvCorrMatrix <- uvCorrMatrix %>% select('ExcitationWv', 'EmissionWv', 'corrCoefI
 uvCorrMatrix <- rename(uvCorrMatrix, c('Ex' = 'ExcitationWv'))
 uvCorrMatrix <- rename(uvCorrMatrix, c('Em' = 'EmissionWv'))
 
-rawEEM <- join(rawEEM, uvCorrMatrix, by = c('Ex', 'Em'))
+corrEEM <- join(rawEEM, uvCorrMatrix, by = c('Ex', 'Em'))
 
-rawEEM <- mutate(rawEEM, SignalCorrIFC = Signal * corrCoefIFC) ## Inner filter correction
-rawEEM <- mutate(rawEEM, SignalRamanNorm = SignalCorrIFC / ramanPeak) ## raman normalization
-rawEEM <- join(rawEEM, blankEEM[,c(1:2,4)], by = c('Ex', 'Em'))
-rawEEM <- rename(rawEEM, c('BlankSignal_Corr' = 'CorrectedSignal'))
-rawEEM <- mutate(rawEEM, CorrectedSignal = SignalRamanNorm - BlankSignal_Corr)
+corrEEM <- mutate(corrEEM, SignalCorrIFC = Signal * corrCoefIFC) ## Inner filter correction
+corrEEM <- mutate(corrEEM, SignalRamanNorm = SignalCorrIFC / ramanPeak) ## raman normalization
+corrEEM <- join(corrEEM, blankEEM[,c(1:2,4)], by = c('Ex', 'Em'))
+corrEEM <- rename(corrEEM, c('BlankSignal_Corr' = 'CorrectedSignal'))
+corrEEM <- mutate(corrEEM, CorrectedSignal = SignalRamanNorm - BlankSignal_Corr)
+corrEEM <- mutate(corrEEM, MaskedSignal = CorrectedSignal)
 
-saveRDS(rawEEM, file = paste0(path, '/scriptDataOut/', tsampleName, '_CorrectedEEM.rds'))
+## remove rayleigh scattering 1st and 2nd order ##
+for(iex in 1:length(exSeq)) {
+    corrEEM$MaskedSignal[corrEEM$Em < (exSeq[iex] + mask_buffer) & corrEEM$Ex == exSeq[iex]] <- NA
+    # test <- subset(corrEEM, Em <)
+    # print(iex)
+    # print(exSeq[iex])
+}
+for(iex in 1:length(exSeq)) {
+    corrEEM$MaskedSignal[corrEEM$Em > ((2 * exSeq[iex]) - mask_buffer) & corrEEM$Ex == exSeq[iex]] <- NA
+}
 
-candyPlotEEM_TEST(rawEEM, tsampleName, TRUE)
+
+saveRDS(corrEEM, file = paste0(path, '/scriptDataOut/', tsampleName, '_CorrectedEEM.rds'))
+
+candyPlotEEM_Mid(corrEEM, tsampleName, TRUE)
+candyPlotEEM_Lo(corrEEM, tsampleName, TRUE)
+candyPlotEEM_Auto(corrEEM, tsampleName, TRUE)
 
 

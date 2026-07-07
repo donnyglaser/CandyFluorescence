@@ -41,8 +41,9 @@ path <- commandArgs(trailingOnly = TRUE)
 
 ## TESTING ##
 # path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
-# setwd('/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
-# print(getwd()) # testing
+path <- '/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Data/Fluorescence/CRESST/TEST_DOC95/260626/4_4_4'
+setwd('/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
+print(getwd()) # testing
 ## TESTING ##
 
 

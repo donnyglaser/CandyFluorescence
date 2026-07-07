@@ -1,9 +1,10 @@
 ## copy script files to path ##
 scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'sampleCorrect_module.R', 'scriptCheck_module.R', 'support_module.R', 'userInput_config.txt')
+scriptFiles <- paste0(getwd(), '/scriptFiles/', scriptFiles)
 ## move all script files to path, then change wd ##
 ## after script finishes, delete script files ##
 dir.create(paste0(path, '/scriptFiles/'))
-file.copy(paste0(getwd(), '/scriptFiles/', scriptFiles), paste0(path, '/scriptFiles'), overwrite = T)
+file.copy(scriptFiles, paste0(path, '/scriptFiles/'), overwrite = T)
 
 dir.create(paste0(path, '/scriptDataOut/'))
 
@@ -156,8 +157,8 @@ pTheme <- theme(plot.title = element_text(hjust = 0.5, size = 21,
             legend.position = 'bottom'
         )
 
-candyPlotEEM_TEST <- function(rawEEM, name, save) {
-    ggplot(rawEEM, aes(x = Ex, y = Em, z = CorrectedSignal)) +
+candyPlotEEM_Mid <- function(corrEEM, name, save) {
+    ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
     geom_contour_filled(breaks = seq(0, 0.5, length.out = 11)) +
     scale_x_continuous(expand = expansion(), limits = c(250,450)) +
     scale_y_continuous(expand = expansion(), limits = c(300,550)) +
@@ -178,7 +179,59 @@ candyPlotEEM_TEST <- function(rawEEM, name, save) {
     pTheme
 
     if(save == TRUE) {
-        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
+        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_MidScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
+    }
+}
+
+candyPlotEEM_Lo <- function(corrEEM, name, save) {
+    ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
+    geom_contour_filled(breaks = seq(0, 0.05, length.out = 11)) +
+    scale_x_continuous(expand = expansion(), limits = c(250,450)) +
+    scale_y_continuous(expand = expansion(), limits = c(300,550)) +
+    ggtitle(name) +
+    xlab("Excitation Wavelength (nm)") +
+    ylab("Emission Wavelength (nm)") +
+    scale_fill_discrete(palette = 'viridis', drop = F,
+        labels = function(x) {
+            lab <- x
+            if (length(x) > 2) {
+                idx <- seq(1, length(x), by = 2)
+                lab[idx] <- ""
+            }
+            lab
+        }
+    ) +
+    guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
+    pTheme
+
+    if(save == TRUE) {
+        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_LoScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
+    }
+}
+
+candyPlotEEM_Auto <- function(corrEEM, name, save) {
+    ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
+    geom_contour_filled(bins = 10) +
+    scale_x_continuous(expand = expansion(), limits = c(250,450)) +
+    scale_y_continuous(expand = expansion(), limits = c(300,550)) +
+    ggtitle(name) +
+    xlab("Excitation Wavelength (nm)") +
+    ylab("Emission Wavelength (nm)") +
+    scale_fill_discrete(palette = 'viridis', drop = F,
+        labels = function(x) {
+            lab <- x
+            if (length(x) > 2) {
+                idx <- seq(1, length(x), by = 2)
+                lab[idx] <- ""
+            }
+            lab
+        }
+    ) +
+    guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
+    pTheme
+
+    if(save == TRUE) {
+        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_AutoScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
     }
 }
 

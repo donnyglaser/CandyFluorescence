@@ -12,11 +12,13 @@ config <- read.table('scriptFiles/userInput_config.txt', header = T, sep = ' ', 
 config <- data.frame(config)
 instrumentConfig <- subset(config, parameter == 'instrument')$setting
 uvConfig <- subset(config, parameter == 'uvvis_source')$setting
+mask_buffer <- as.numeric(subset(config, parameter == 'mask_buffer')$setting)
 
 
 allFiles <- list.files(getwd(), recursive = T, include.dirs = F)
 allFiles <- allFiles[!grepl("scriptRunLog.txt", allFiles)]
 allFiles <- allFiles[!grepl('scriptFiles/', allFiles)]
+allFiles <- allFiles[!grepl('scriptDataOut/', allFiles)]
 
 ## 1.a. check for RAMAN file ##
 ramanFile <- allFiles[grepl('.*raman.*', allFiles, ignore.case = T)]
