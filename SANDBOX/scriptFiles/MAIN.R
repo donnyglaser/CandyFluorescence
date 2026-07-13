@@ -41,9 +41,10 @@ path <- commandArgs(trailingOnly = TRUE)
 
 ## TESTING ##
 # path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
-path <- '/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Data/Fluorescence/CRESST/TEST_DOC95/260626/4_4_4'
-setwd('/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
-print(getwd()) # testing
+# path <- '/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Data/Fluorescence/CRESST/TEST_DOC95/260626/4_4_4'
+# setwd('/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
+# print(getwd()) # testing
+# options(warn = 2)
 ## TESTING ##
 
 
@@ -64,6 +65,8 @@ source('scriptFiles/blankEEM_module.R')
 ## it works up to here (260513) ##
 
 ## SECTION 4: correct samples
+
+indOut <- data.frame(SampleName = NA, RamanArea = NA, FI = NA, HIX = NA, BIX = NA, SpectralSlope = NA, Absorbance254 = NA, TotalFluorescence = NA)
 
 for(isample in 1:length(sampleNames)) {
     tsampleName <- sampleNames[isample]
@@ -97,6 +100,18 @@ for(isample in 1:length(sampleNames)) {
 
     source('scriptFiles/sampleCorrect_module.R')
 
+    ## SECTION 4b: calculate fluorescence indexes ##
+    source('scriptFiles/indexes_module.R')
+    indOut[isample,] <- tIndexes
+
+    log_msg('Notice', paste0(tsampleName, ' corrected (', isample, '/', length(sampleNames), ')'))
 }
+projName <- str_split(path, '/')[[1]]
+projName <- projName[length(projName)]
+
+saveRDS(indOut, file = paste0('scriptDataOut/', projName, '_FluorescenceIndexes.rds'))
+write_delim(indOut, file = paste0('scriptDataOut/', projName, '_FluorescenceIndexes.csv'), delim = ',')
+
+unlink('scriptFiles', recursive = T)
 
 log_msg('Notice', 'All samples corrected')

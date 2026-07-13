@@ -1,12 +1,12 @@
 ## copy script files to path ##
-scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'sampleCorrect_module.R', 'scriptCheck_module.R', 'support_module.R', 'userInput_config.txt')
+scriptFiles <- c('MAIN.R', 'blankEEM_module.R', 'sampleCorrect_module.R', 'scriptCheck_module.R', 'support_module.R', 'indexes_module.R', 'userInput_config.txt')
 scriptFiles <- paste0(getwd(), '/scriptFiles/', scriptFiles)
 ## move all script files to path, then change wd ##
 ## after script finishes, delete script files ##
-dir.create(paste0(path, '/scriptFiles/'))
+dir.create(paste0(path, '/scriptFiles/'), showWarnings = F)
 file.copy(scriptFiles, paste0(path, '/scriptFiles/'), overwrite = T)
 
-dir.create(paste0(path, '/scriptDataOut/'))
+dir.create(paste0(path, '/scriptDataOut/'), showWarnings = F)
 
 setwd(path)
 
@@ -37,7 +37,11 @@ if (length(missingPackages) > 0) {
     }
 }
 ## load necessary libraries ##
-lapply(packages, library, character.only = TRUE)
+invisible(lapply(packages, function(pkg) {
+    suppressPackageStartupMessages(
+        library(pkg, character.only = TRUE)
+    )
+}))
 
 
 
@@ -122,7 +126,7 @@ candyReadAbs <- function(file, format) {
         rawUV <- data.frame(uv = rawUV)
         rawUV <- data.frame(do.call('rbind', strsplit(as.character(rawUV$uv),'\t',fixed=TRUE)))
         colnames(rawUV) <- c('Wavelength', 'Absorbance')
-        rawUV <- sapply(rawUV, as.numeric)
+        rawUV <- suppressWarnings(sapply(rawUV, as.numeric))
         out <- data.frame(rawUV)
     } else if(tolower(format) == 'aqualog-next-origin') {
         out <- NULL
@@ -144,7 +148,7 @@ pTheme <- theme(plot.title = element_text(hjust = 0.5, size = 21,
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             panel.background = element_blank(),
-            panel.border = element_rect(color = "black", fill=NA, size=2),
+            panel.border = element_rect(color = "black", fill=NA, linewidth=2),
             legend.key=element_blank(),
             legend.key.height = unit(0.25, "inch"),
             legend.key.width = unit(1.35, "inch"),
@@ -157,125 +161,96 @@ pTheme <- theme(plot.title = element_text(hjust = 0.5, size = 21,
             legend.position = 'bottom'
         )
 
-candyPlotEEM_Mid <- function(corrEEM, name, save) {
-    ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
-    geom_contour_filled(breaks = seq(0, 0.5, length.out = 11)) +
-    scale_x_continuous(expand = expansion(), limits = c(250,450)) +
-    scale_y_continuous(expand = expansion(), limits = c(300,550)) +
-    ggtitle(name) +
-    xlab("Excitation Wavelength (nm)") +
-    ylab("Emission Wavelength (nm)") +
-    scale_fill_discrete(palette = 'viridis', drop = F,
-        labels = function(x) {
-            lab <- x
-            if (length(x) > 2) {
-                idx <- seq(1, length(x), by = 2)
-                lab[idx] <- ""
-            }
-            lab
-        }
-    ) +
-    guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
-    pTheme
 
-    if(save == TRUE) {
-        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_MidScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
-    }
+## change limits of color scheme so anything out of the scale is the highest color (> high limit ##)
+
+
+
+candyPlotEEM_Mid <- function(corrEEM, name, save) {
+    suppressWarnings({
+        ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
+        geom_contour_filled(breaks = c(seq(0, 0.45, length.out = 10), Inf)) +
+        scale_x_continuous(expand = expansion(), limits = c(250,450)) +
+        scale_y_continuous(expand = expansion(), limits = c(300,550)) +
+        ggtitle(name) +
+        xlab("Excitation Wavelength (nm)") +
+        ylab("Emission Wavelength (nm)") +
+        scale_fill_discrete(palette = 'viridis', drop = F,
+            labels = function(x) {
+                lab <- x
+                lab[length(lab)] <- "\u2265 0.5"   # ≥ 0.5
+                if (length(x) > 2) {
+                    idx <- seq(1, length(x), by = 2)
+                    lab[idx] <- ""
+                }
+                lab
+            }
+        ) +
+        guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
+        pTheme
+
+        if(save == TRUE) {
+            ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_MidScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
+        }
+    })
+    
 }
 
 candyPlotEEM_Lo <- function(corrEEM, name, save) {
-    ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
-    geom_contour_filled(breaks = seq(0, 0.05, length.out = 11)) +
-    scale_x_continuous(expand = expansion(), limits = c(250,450)) +
-    scale_y_continuous(expand = expansion(), limits = c(300,550)) +
-    ggtitle(name) +
-    xlab("Excitation Wavelength (nm)") +
-    ylab("Emission Wavelength (nm)") +
-    scale_fill_discrete(palette = 'viridis', drop = F,
-        labels = function(x) {
-            lab <- x
-            if (length(x) > 2) {
-                idx <- seq(1, length(x), by = 2)
-                lab[idx] <- ""
+    suppressWarnings({
+        ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
+        geom_contour_filled(breaks = c(seq(0, 0.045, length.out = 10), Inf)) +
+        # geom_contour_filled(breaks = seq(0, 0.05, length.out = 11)) +
+        scale_x_continuous(expand = expansion(), limits = c(250,450)) +
+        scale_y_continuous(expand = expansion(), limits = c(300,550)) +
+        ggtitle(name) +
+        xlab("Excitation Wavelength (nm)") +
+        ylab("Emission Wavelength (nm)") +
+        scale_fill_discrete(palette = 'viridis', drop = F,
+            labels = function(x) {
+                lab <- x
+                lab[length(lab)] <- "\u2265 0.05"   # ≥ 0.5
+                if (length(x) > 2) {
+                    idx <- seq(1, length(x), by = 2)
+                    lab[idx] <- ""
+                }
+                lab
             }
-            lab
-        }
-    ) +
-    guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
-    pTheme
+        ) +
+        guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
+        pTheme
 
-    if(save == TRUE) {
-        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_LoScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
-    }
+        if(save == TRUE) {
+            ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_LoScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
+        }
+    })
 }
 
 candyPlotEEM_Auto <- function(corrEEM, name, save) {
-    ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
-    geom_contour_filled(bins = 10) +
-    scale_x_continuous(expand = expansion(), limits = c(250,450)) +
-    scale_y_continuous(expand = expansion(), limits = c(300,550)) +
-    ggtitle(name) +
-    xlab("Excitation Wavelength (nm)") +
-    ylab("Emission Wavelength (nm)") +
-    scale_fill_discrete(palette = 'viridis', drop = F,
-        labels = function(x) {
-            lab <- x
-            if (length(x) > 2) {
-                idx <- seq(1, length(x), by = 2)
-                lab[idx] <- ""
+    suppressWarnings({
+        ggplot(corrEEM, aes(x = Ex, y = Em, z = MaskedSignal)) +
+        geom_contour_filled(bins = 10) +
+        scale_x_continuous(expand = expansion(), limits = c(250,450)) +
+        scale_y_continuous(expand = expansion(), limits = c(300,550)) +
+        ggtitle(name) +
+        xlab("Excitation Wavelength (nm)") +
+        ylab("Emission Wavelength (nm)") +
+        scale_fill_discrete(palette = 'viridis', drop = F,
+            labels = function(x) {
+                lab <- x
+                if (length(x) > 2) {
+                    idx <- seq(1, length(x), by = 2)
+                    lab[idx] <- ""
+                }
+                lab
             }
-            lab
+        ) +
+        guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
+        pTheme
+
+        if(save == TRUE) {
+            ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_AutoScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
         }
-    ) +
-    guides(fill = guide_colorsteps(title = 'Raman Units (AU)', show.limits = T)) +
-    pTheme
-
-    if(save == TRUE) {
-        ggsave(file = paste0(path, '/scriptDataOut/', name, '_CorrectedEEM_Plot_AutoScale.png'), height = 6.5, width = 8, unit = 'in', dpi = 300)
-    }
+    })
 }
-
-## need to figure out best way to save plots ##
-
-# ggsave('test.png', height = 6.2, width = 8, unit = 'in', dpi = 300)
-
-
-
-## eemR function, depreciating eemR from script (260505) ##
-# aqualogNextEz <- function(file) {
-#     ex <- read.table(file, header = F, sep = '', skip = 2, nrows = 1)
-#     ex <- ex[1,seq(2, ncol(ex), 2)]
-#     ex <- as.matrix(ex)
-#     ex <- matrix(sapply(strsplit(ex, ":"), `[`, 1), nrow = nrow(ex))
-#     ex <- as.numeric(ex)
-
-#     datLength <- length(readLines(file)) - 6
-#     dat <- read.table(file, header = F, sep = '', skip = 4, nrow = datLength)
-
-#     em <- round(dat[,1], digits = 2)
-#     x <- dat[,seq(2, ncol(dat), 2)]
-#     x <- as.matrix(x)
-#     res <- x
-
-#     colnames(res) <- ex
-#     row.names(res) <- round(em, digits = 2)
-
-#     res <- reshape2::melt(res, varnames = c('em', 'ex'), value.name = 'x')
-
-#     ex <- sort(unique(ex))
-#     em <- sort(unique(em))
-#     # x <- matrix(res$x, ncol = length(ex), byrow = F)
-
-#     # We need to interpolate because you do not have a regular grid (i.e. asynchronous)
-#     r <- MBA::mba.surf(res %>% drop_na(), no.X = 200, no.Y = 200, extend = FALSE)
-
-#     l <- list(
-#         file = file,
-#         x = r$xyz.est$z,
-#         ex = r$xyz.est$y,
-#         em = r$xyz.est$x
-#     )
-
-#     return(l)
-# }
 
