@@ -1,0 +1,117 @@
+## this script orchestrates the EEM correction process ##
+## goals: ##
+## 1. identify the necessary files:
+##### 1.a. raman
+##### 1.b. blank EEM
+##### 1.c. samples:UV/vis
+##### 1.d. samples:EEM
+##### 1.e. check n samples:UV/vis == n samples:EEM
+##### 1.f. check EEM resolution (this might not matter since the eemR library interpolates??)
+
+## consider combining steps 2 & 3 ##
+## 2. calculate raman peak area
+## 3. correct blank
+## both can be calculated using the blank EEM ##
+####################################
+
+## 4. correct samples for(isample in 1:n){}
+##### 4.a. calculate UV/vis IFC correction matrix
+##### 4.b. IFC correction
+##### 4.c. raman normalization
+##### 4.d. blank correct
+## 5. calculate indexes
+## 6. plots
+## 7. save data
+##### 7.a. corrected EEMS to:
+########## 7.a.i. project directory (working dir)
+########## 7.a.ii. all EEMs directory
+##### 7.b. indexes to:
+########## 7.b.i. project directory (working dir)
+########## 7.b.ii. all EEMs directory
+##### 7.c. script run information text file (file that has summary information about how the script ran: time, how many samples, model version, any errors/warnings, etc.)
+
+## order of operations from Cory & McKnight:
+#### raman normalize blank (line 74 from F4CorrectFunII.m)
+#### inner filter correct sample (line 121 from F4CorrectFunII.m)
+#### raman normalize sample (line 123 from F4CorrectFunII.m)
+#### blank subtract sample (line 125 from F4CorrectFunII.m)
+#### apply dilution factor to sample (line 127 from F4CorrectFunII.m)
+
+path <- commandArgs(trailingOnly = TRUE)
+
+## TESTING ##
+# path <- '/Users/dmglaser/Documents/Research/UW/~PostDoc/CaNDyLab/Data/Fluorescence/AquariumTestDMG/ScriptTest'
+# path <- '/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Data/Fluorescence/CRESST/TEST_DOC95/260626/4_4_4'
+# setwd('/Users/dmglaser/Documents/Research/UW/PostDoc/CaNDyLab/Scripts/CandyFluorescence/SANDBOX') # TESTING ##
+# print(getwd()) # testing
+# options(warn = 2)
+## TESTING ##
+
+
+
+## SECTION 0: prep R libraries, move script files, load necessary functions 
+
+source('scriptFiles/support_module.R')
+
+log_msg('Notice', 'Script start')
+
+## SECTION 1: check necessary files are present
+source('scriptFiles/scriptCheck_module.R')
+
+
+## SECTION 2 & 3: calculate raman peak area & correct blank EEM ##
+source('scriptFiles/blankEEM_module.R')
+
+## it works up to here (260513) ##
+
+## SECTION 4: correct samples
+
+indOut <- data.frame(SampleName = NA, RamanArea = NA, FI = NA, HIX = NA, BIX = NA, SpectralSlope = NA, Absorbance254 = NA, TotalFluorescence = NA)
+
+for(isample in 1:length(sampleNames)) {
+    tsampleName <- sampleNames[isample]
+    tsampleFiles <- sampleFiles[grepl(paste0('.*', tsampleName, '.*'), sampleFiles)]
+    
+    if(tolower(instrumentConfig) == 'aqualog-next-ezspec') {
+        tEEMFile <- tsampleFiles[grepl('_EEM.txt', tsampleFiles)]
+    } else if(tolower(instrumentConfig) == 'aqualog-next-origin') {
+        log_msg('Error', 'Script does not support Aqualog-Next-Origin EEM file format')
+        stop("Unknown file format. Exiting.")
+    } else if(tolower(instrumentConfig) == 'fluoromax') {
+        log_msg('Error', 'Script does not support Fluoromax EEM file format')
+        stop("Unknown file format. Exiting.")
+    } else {
+        log_msg('Error', 'Unknown EEM file format')
+        stop("Unknown file format. Exiting.")
+    }
+
+    if(tolower(uvConfig) == 'aqualog-next-ezspec') {
+        tUVFile <- tsampleFiles[grepl('_AbsTSpec.txt', tsampleFiles)]
+    } else if(tolower(uvConfig) == 'aqualog-next-origin') {
+        log_msg('Error', 'Script does not support Aqualog-Next-Origin UV/vis file format')
+        stop("Unknown file format. Exiting.")
+    } else if(tolower(uvConfig) == 'uvmini') {
+        log_msg('Error', 'Script does not support UVmini UV/vis file format')
+        stop("Unknown file format. Exiting.")
+    } else {
+        log_msg('Error', 'Unknown UV/vis file format')
+        stop("Unknown file format. Exiting.")
+    }
+
+    source('scriptFiles/sampleCorrect_module.R')
+
+    ## SECTION 4b: calculate fluorescence indexes ##
+    source('scriptFiles/indexes_module.R')
+    indOut[isample,] <- tIndexes
+
+    log_msg('Notice', paste0(tsampleName, ' corrected (', isample, '/', length(sampleNames), ')'))
+}
+projName <- str_split(path, '/')[[1]]
+projName <- projName[length(projName)]
+
+saveRDS(indOut, file = paste0('scriptDataOut/', projName, '_FluorescenceIndexes.rds'))
+write_delim(indOut, file = paste0('scriptDataOut/', projName, '_FluorescenceIndexes.csv'), delim = ',')
+
+unlink('scriptFiles', recursive = T)
+
+log_msg('Notice', 'All samples corrected')
