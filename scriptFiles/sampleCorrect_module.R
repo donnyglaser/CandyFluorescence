@@ -6,6 +6,7 @@
 rawUV <- candyReadAbs(tUVFile, 'aqualog-next-ezspec')
 rawEEM <- candyReadEEM(tEEMFile, 'aqualog-next-ezspec', interpolate = F)
 
+## hard coded EEM resolution ##
 exSeq <- seq(450,250,-10)
 emSeq <- unique(rawEEM$Em)
 emSeq <- round(emSeq, digits = 3)

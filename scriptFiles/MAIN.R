@@ -106,8 +106,7 @@ for(isample in 1:length(sampleNames)) {
 
     log_msg('Notice', paste0(tsampleName, ' corrected (', isample, '/', length(sampleNames), ')'))
 }
-projName <- str_split(path, '/')[[1]]
-projName <- projName[length(projName)]
+projName <- basename(normalizePath(path, winslash = '/'))
 
 saveRDS(indOut, file = paste0('scriptDataOut/', projName, '_FluorescenceIndexes.rds'))
 write_delim(indOut, file = paste0('scriptDataOut/', projName, '_FluorescenceIndexes.csv'), delim = ',')
